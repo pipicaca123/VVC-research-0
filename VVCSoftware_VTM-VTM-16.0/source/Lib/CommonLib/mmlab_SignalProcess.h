@@ -1,7 +1,7 @@
 #ifndef __MMLABSIGNALPROCESS__
 #define __MMLABSIGNALPROCESS__
 
-#include <opencv2/core/mat.hpp>
+#include <opencv2/opencv.hpp>
 #include <sys/stat.h>
 #include <string>
 #include <iostream>
@@ -9,11 +9,11 @@
 
 class MMlab_SignalProcess{
 private:
-    static std::vector<cv::Mat> inputs;
-
+    std::vector<cv::Mat> inputs;
+    void ImageShow(cv::Mat& img); 
 public:
     MMlab_SignalProcess(){  }; //do nothing
-    //get the orignal pixel values and transform to CV format.
-    static void GetPixelInputs(const CodingStructure &cs);
+    void GetPixelInputs(const CodingStructure &cs); //get the orignal pixel values and transform to CV format.
+    void ImageProcessing(void);                       // apply Canny algorithm
 };
 #endif
