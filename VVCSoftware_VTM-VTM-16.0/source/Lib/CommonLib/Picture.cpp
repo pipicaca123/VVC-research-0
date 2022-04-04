@@ -182,7 +182,7 @@ void Picture::destroyTempBuffers()
     cs->rebindPicBufs();
   }
 }
-
+    //getOrigBuf: read in video signal
        PelBuf     Picture::getOrigBuf(const CompArea &blk)        { return getBuf(blk,  PIC_ORIGINAL); }
 const CPelBuf     Picture::getOrigBuf(const CompArea &blk)  const { return getBuf(blk,  PIC_ORIGINAL); }
        PelUnitBuf Picture::getOrigBuf(const UnitArea &unit)       { return getBuf(unit, PIC_ORIGINAL); }

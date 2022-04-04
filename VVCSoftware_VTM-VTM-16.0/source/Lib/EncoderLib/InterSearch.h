@@ -388,16 +388,16 @@ protected:
   typedef struct
   {
     SearchRange searchRange;
-    const CPelBuf* pcPatternKey;
-    const Pel*  piRefY;
-    int         iRefStride;
-    int         iBestX;
+    const CPelBuf* pcPatternKey; // orignal compared pattern
+    const Pel*  piRefY; // reference pixel, searching area pixel
+    int         iRefStride; //searching area stride
+    int         iBestX; // the best compared point's position
     int         iBestY;
     uint32_t        uiBestRound;
-    uint32_t        uiBestDistance;
+    uint32_t        uiBestDistance; // brst point's distance
     Distortion  uiBestSad;
     uint8_t       ucPointNr;
-    int         subShiftMode;
+    int         subShiftMode; // searching mode
     unsigned    imvShift;
     bool        useAltHpelIf;
     bool        inCtuSearch;

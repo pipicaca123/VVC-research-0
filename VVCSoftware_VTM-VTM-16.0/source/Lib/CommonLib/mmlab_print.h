@@ -4,9 +4,9 @@
 
 #include <chrono>
 #include <string>
-
 #define xcompressNO 0
 #define xcheckRDcostintraNO 1
+
 class MMLAB_printtool
 {
 private:

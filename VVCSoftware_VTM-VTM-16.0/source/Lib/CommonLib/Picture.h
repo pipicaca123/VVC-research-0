@@ -81,7 +81,7 @@ struct Picture : public UnitArea
   PelStorage*              m_invColourTransfBuf;
   void              createColourTransfProcessor(bool firstPictureInSequence, SEIColourTransformApply* ctiCharacteristics, PelStorage* ctiBuf, int width, int height, ChromaFormat fmt, int bitDepth);
   PelUnitBuf        getDisplayBuf();
-
+       //getOrigBuf: read in video signal
          PelBuf     getOrigBuf(const CompArea &blk);
   const CPelBuf     getOrigBuf(const CompArea &blk) const;
          PelUnitBuf getOrigBuf(const UnitArea &unit);

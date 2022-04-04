@@ -87,8 +87,12 @@ static const int MIN_HEIGHT                      = 128;
 static const int MAX_HEIGHT                      = 4320;
 
 #define CLIP3(min, max, x)              (((x) > (max)) ? (max) :(((x) < (min))? (min):(x)))
+/*----redifine in opencv2-----*/
+#ifndef __MMLABSIGNALPROCESS__ 
 #define MIN(x,y)                        (((x) > (y)) ? (y) : (x))
 #define MAX(x,y)                        (((x) > (y)) ? (x) : (y))
+#endif
+/*---------------------------*/
 #define MSB16(x)                        ((x&0xFFFF0000)>>16)
 #define LSB16(x)                        (x&0x0000FFFF)
 #define BIT0(x)                         (x&0x1)

@@ -55,8 +55,9 @@
 
 //my tool block
 #include "CommonLib/mmlab_print.h"
+#include "CommonLib/mmlab_SignalProcess.h"
 MMLAB_printtool mmlab_printtool = MMLAB_printtool(); //for trace code, understand the pipeline of VTM.
-
+MMlab_SignalProcess mmlab_signalprocess = MMlab_SignalProcess();
 //! \ingroup EncoderLib
 //! \{
 
@@ -263,7 +264,8 @@ void EncCu::init( EncLib* pcEncLib, const SPS& sps )
 
 void EncCu::compressCtu( CodingStructure& cs, const UnitArea& area, const unsigned ctuRsAddr, const int prevQP[], const int currQP[] )
 {
-  mmlab_printtool.print(std::string("Enter compressCTU."));
+  mmlab_printtool.print(std::string("Enter compressCTU.\n"));
+  // mmlab_signalprocess.GetPixelInputs(cs);
   m_modeCtrl->initCTUEncoding( *cs.slice );
   cs.treeType = TREE_D;
 
@@ -307,7 +309,7 @@ void EncCu::compressCtu( CodingStructure& cs, const UnitArea& area, const unsign
   tempCS->currQP[CH_L] = bestCS->currQP[CH_L] =
   tempCS->baseQP       = bestCS->baseQP       = currQP[CH_L];
   tempCS->prevQP[CH_L] = bestCS->prevQP[CH_L] = prevQP[CH_L];
-
+  mmlab_signalprocess.GetPixelInputs(*tempCS); //get the processed CTU Coding Structure.
   xCompressCU(tempCS, bestCS, partitioner);
   cs.slice->m_mapPltCost[0].clear();
   cs.slice->m_mapPltCost[1].clear();
@@ -505,9 +507,9 @@ bool EncCu::xCheckBestMode( CodingStructure *&tempCS, CodingStructure *&bestCS, 
 void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Partitioner& partitioner, double maxCostAllowed )
 {
   CHECK(maxCostAllowed < 0, "Wrong value of maxCostAllowed!");
-  mmlab_printtool.print(std::string("Enter xcompressCU.  ==>"));
-  mmlab_printtool.print("luma POS ("+std::to_string(tempCS->area.Y().lumaPos().x)+","+std::to_string(tempCS->area.Y().lumaPos().y)+"),  ");
-  mmlab_printtool.print("luma SIZE  ("+std::to_string(tempCS->area.Y().lumaSize().width)+","+std::to_string(tempCS->area.Y().lumaSize().height)+") \n");
+  // mmlab_printtool.print(std::string("Enter xcompressCU.  ==>"));
+  // mmlab_printtool.print("luma POS ("+std::to_string(tempCS->area.Y().lumaPos().x)+","+std::to_string(tempCS->area.Y().lumaPos().y)+"),  ");
+  // mmlab_printtool.print("luma SIZE  ("+std::to_string(tempCS->area.Y().lumaSize().width)+","+std::to_string(tempCS->area.Y().lumaSize().height)+") \n");
   
   uint32_t compBegin;
   uint32_t numComp;
@@ -1582,7 +1584,7 @@ void EncCu::xCheckModeSplit(CodingStructure *&tempCS, CodingStructure *&bestCS, 
 
 bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS, Partitioner &partitioner, const EncTestMode& encTestMode, bool adaptiveColorTrans)
 {
-  mmlab_printtool.print(std::string("Enter Intra mode.\n"));
+  // mmlab_printtool.print(std::string("Enter Intra mode.\n"));
   double          bestInterCost             = m_modeCtrl->getBestInterCost();
   double          costSize2Nx2NmtsFirstPass = m_modeCtrl->getMtsSize2Nx2NFirstPassCost();
   bool            skipSecondMtsPass         = m_modeCtrl->getSkipSecondMTSPass();
@@ -4634,6 +4636,11 @@ bool EncCu::xCheckRDCostInterIMV(CodingStructure *&tempCS, CodingStructure *&bes
 
 void EncCu::xCalDebCost( CodingStructure &cs, Partitioner &partitioner, bool calDist )
 {
+  // mmlab_printtool.print(std::string("Enter xCalDebCost.\n"));
+  /*-------------mmlab test START--------------*/
+  PelUnitBuf org_test = cs.picture->getOrigBuf();
+  //cout<<(org_test.Y().S)<<endl;
+  /*-------------mmlab test END--------------*/
   if ( cs.cost == MAX_DOUBLE )
   {
     cs.costDbOffset = 0;
@@ -4779,6 +4786,7 @@ void EncCu::xCalDebCost( CodingStructure &cs, Partitioner &partitioner, bool cal
 
 Distortion EncCu::getDistortionDb( CodingStructure &cs, CPelBuf org, CPelBuf reco, ComponentID compID, const CompArea& compArea, bool afterDb )
 {
+  mmlab_printtool.print(std::string("Enter getDistortionDb.\n"));
   Distortion dist = 0;
 #if WCG_EXT
   m_pcRdCost->setChromaFormat(cs.sps->getChromaFormatIdc());
@@ -5225,7 +5233,7 @@ void EncCu::xEncodeInterResidual(CodingStructure *&tempCS, CodingStructure *&bes
 
 void EncCu::xEncodeDontSplit( CodingStructure &cs, Partitioner &partitioner )
 {
-  mmlab_printtool.print(std::string("Enter Don't split mode.\n"));
+  // mmlab_printtool.print(std::string("Enter Don't split mode.\n"));
   m_CABACEstimator->resetBits();
 
   m_CABACEstimator->split_cu_mode( CU_DONT_SPLIT, cs, partitioner );
