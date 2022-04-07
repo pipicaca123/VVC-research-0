@@ -26,7 +26,7 @@ void MMlab_SignalProcess::GetPixelInputs(const CodingStructure &cs){
                 cs_img.at<uint16_t>(imgy, imgx) *= ((2<<8)/4); //exchange to 16 bits
             }
         }
-        // ImageShow(cs_img);
+        ImageShow(cs_img);
         inputs.push_back(cs_img);
 }
 
@@ -38,7 +38,7 @@ void MMlab_SignalProcess::ImageProcessing(void){
     // std::cout<<"image size is: "<<img.size().height<<","<<img.size().width<<std::endl;
     cv::GaussianBlur(img,img,cv::Size(3,3),1.5);
     cv::Canny(img,img,5,45);
-    ImageShow(img);
+    // ImageShow(img);
     inputs.pop_back();
 }
 

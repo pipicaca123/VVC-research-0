@@ -310,7 +310,7 @@ void EncCu::compressCtu( CodingStructure& cs, const UnitArea& area, const unsign
   tempCS->baseQP       = bestCS->baseQP       = currQP[CH_L];
   tempCS->prevQP[CH_L] = bestCS->prevQP[CH_L] = prevQP[CH_L];
   mmlab_signalprocess.GetPixelInputs(*tempCS); //get the processed CTU Coding Structure.
-  mmlab_signalprocess.ImageProcessing();
+  mmlab_signalprocess.ImageProcessing(); // apply image processing algorithm to current CTU.
   xCompressCU(tempCS, bestCS, partitioner);
   cs.slice->m_mapPltCost[0].clear();
   cs.slice->m_mapPltCost[1].clear();
@@ -565,6 +565,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
   const ModeType modeTypeParent  = partitioner.modeType;
   const TreeType treeTypeParent  = partitioner.treeType;
   const ChannelType chTypeParent = partitioner.chType;
+  //get current area.
   const UnitArea currCsArea = clipArea( CS::getArea( *bestCS, bestCS->area, partitioner.chType ), *tempCS->picture );
 
 #if JVET_Y0152_TT_ENC_SPEEDUP
@@ -732,7 +733,10 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     m_bestBcwCost[0] = m_bestBcwCost[1] = std::numeric_limits<double>::max();
     m_bestBcwIdx[0] = m_bestBcwIdx[1] = -1;
   }
-  do
+  // According to the stack mode to process predictive encoding or partition,
+  // after the while loop, the CU has taken the lowest RDcost to process 
+  // partition and encoding.
+  do // Based on the available mode to execute skip, inter, intra, PCM, etc.
   {
     for (int i = compBegin; i < (compBegin + numComp); i++)
     {
@@ -740,7 +744,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       tempCS->prevPLT.curPLTSize[comID] = curLastPLTSize[comID];
       memcpy(tempCS->prevPLT.curPLT[i], curLastPLT[i], curLastPLTSize[comID] * sizeof(Pel));
     }
-    EncTestMode currTestMode = m_modeCtrl->currTestMode();
+    EncTestMode currTestMode = m_modeCtrl->currTestMode(); 
     currTestMode.maxCostAllowed = maxCostAllowed;
 
     if (pps.getUseDQP() && partitioner.isSepTree(*tempCS) && isChroma( partitioner.chType ))
@@ -890,8 +894,10 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
         }
       }
       else
-      {
+      { // in the original dataset, the YCbCr video will directly enter this part.
         xCheckRDCostIntra(tempCS, bestCS, partitioner, currTestMode, false);
+        // MMlab flag(temporary) <all ETM_INTRA>
+        // std::cout<<currTestMode.type<<std::endl;
       }
 #if JVET_Y0152_TT_ENC_SPEEDUP
       splitRdCostBest[CTU_LEVEL] = bestCS->cost;
@@ -922,7 +928,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       tempCS->splitRdCostBest = splitRdCostBest;
 #endif
     }
-    else if( isModeSplit( currTestMode ) )
+    else if( isModeSplit( currTestMode ) ) // CU block partition mode.
     {
       if (bestCS->cus.size() != 0)
       {
@@ -967,6 +973,8 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
         }
 
 #if JVET_Y0152_TT_ENC_SPEEDUP
+        // MMlab flag(temporary)
+        // std::cout<<currTestMode.type<<std::endl;
         xCheckModeSplit( tempCS, bestCS, partitioner, currTestMode, modeTypeParent, skipInterPass, splitRdCostBest );
         tempCS->splitRdCostBest = splitRdCostBest;
 #else
@@ -1162,7 +1170,8 @@ void EncCu::xCheckModeSplit(CodingStructure *&tempCS, CodingStructure *&bestCS, 
   const uint32_t currDepth    = partitioner.currDepth;
 #endif
   const auto oldPLT           = tempCS->prevPLT;
-
+  // MMlab flag(temporary)
+  // std::cout<<encTestMode.type<<std::endl;
   const PartSplit split = getPartSplit( encTestMode );
   const ModeType modeTypeChild = partitioner.modeType;
 
@@ -1583,6 +1592,7 @@ void EncCu::xCheckModeSplit(CodingStructure *&tempCS, CodingStructure *&bestCS, 
   tempCS->prevQP[partitioner.chType] = oldPrevQp;
 }
 
+// Choose the best intra mode and  transform type.
 bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS, Partitioner &partitioner, const EncTestMode& encTestMode, bool adaptiveColorTrans)
 {
   // mmlab_printtool.print(std::string("Enter Intra mode.\n"));
@@ -1614,7 +1624,8 @@ bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS
   double trGrpStopThreshold[ 3 ] = { 1.001, 1.001, 1.001 };
   int    bestMtsFlag             =   0;
   int    bestLfnstIdx            =   0;
-
+  // decide whether to use LFNST or not, 0 represent not to use LFNST. 1&2 respresent the
+  // corresponse mode.
   const int  maxLfnstIdx         = ( partitioner.isSepTree( *tempCS ) && partitioner.chType == CHANNEL_TYPE_CHROMA && ( partitioner.currArea().lwidth() < 8 || partitioner.currArea().lheight() < 8 ) )
                                    || ( partitioner.currArea().lwidth() > sps.getMaxTbSize() || partitioner.currArea().lheight() > sps.getMaxTbSize() ) ? 0 : 2;
   bool       skipOtherLfnst      = false;
@@ -1870,6 +1881,8 @@ bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS
               bestCS->tmpColorSpaceIntraCost[colorSpaceIdx] = tempCS->cost;
             }
           }
+          // MMLAB flag(temporary)
+          // std::cout<<encTestMode.type<<std::endl;
           if( !sps.getUseLFNST() )
           {
             xCheckBestMode( tempCS, bestCS, partitioner, encTestMode );
@@ -3364,6 +3377,7 @@ void EncCu::xCheckRDCostMergeGeo2Nx2N(CodingStructure *&tempCS, CodingStructure 
 
 void EncCu::xCheckRDCostAffineMerge2Nx2N( CodingStructure *&tempCS, CodingStructure *&bestCS, Partitioner &partitioner, const EncTestMode& encTestMode )
 {
+  mmlab_printtool.print(std::string("Enter xCheckRDCostAffineMerge2Nx2N mode.\n"));
   if( m_modeCtrl->getFastDeltaQp() )
   {
     return;
