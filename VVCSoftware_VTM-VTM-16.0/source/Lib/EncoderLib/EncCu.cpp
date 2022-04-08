@@ -568,6 +568,9 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
   //get current area.
   const UnitArea currCsArea = clipArea( CS::getArea( *bestCS, bestCS->area, partitioner.chType ), *tempCS->picture );
 
+  /*-----mmlab test algorithm-----*/
+  //mmlab_signalprocess.EarlyStopAlgorithm(*m_modeCtrl);
+  /*------------------------------*/
 #if JVET_Y0152_TT_ENC_SPEEDUP
   tempCS->splitRdCostBest = NULL;
 #endif
@@ -622,7 +625,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       }
 
       bool isInRefreshArea = tempCS->withinRefresh(begGdrX, endGdrX);
-
+  
       if (isInRefreshArea)
       {
         m_modeCtrl->forceIntraMode();
@@ -744,7 +747,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       tempCS->prevPLT.curPLTSize[comID] = curLastPLTSize[comID];
       memcpy(tempCS->prevPLT.curPLT[i], curLastPLT[i], curLastPLTSize[comID] * sizeof(Pel));
     }
-    EncTestMode currTestMode = m_modeCtrl->currTestMode(); 
+    EncTestMode currTestMode = m_modeCtrl->currTestMode();  
     currTestMode.maxCostAllowed = maxCostAllowed;
 
     if (pps.getUseDQP() && partitioner.isSepTree(*tempCS) && isChroma( partitioner.chType ))
@@ -973,7 +976,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
         }
 
 #if JVET_Y0152_TT_ENC_SPEEDUP
-        // MMlab flag(temporary)
+        // MMlab flag(temporary) <QTMTT result>
         // std::cout<<currTestMode.type<<std::endl;
         xCheckModeSplit( tempCS, bestCS, partitioner, currTestMode, modeTypeParent, skipInterPass, splitRdCostBest );
         tempCS->splitRdCostBest = splitRdCostBest;

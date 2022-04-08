@@ -5,6 +5,10 @@
 #include <string>
 #include <iostream>
 
+//debugger parameter
+#define COMPUTER_USE 1 // 1: I'm using lab's computer, 0: I'm using my own laptop
+#define IMAGE_DEBUG // use for activate the image show bebugger
+
 void MMlab_SignalProcess::GetPixelInputs(const CodingStructure &cs){
         //get the CS picture size & position
         int cs_x = cs.area.lx(); //the definition is col->x, row->y
@@ -26,7 +30,9 @@ void MMlab_SignalProcess::GetPixelInputs(const CodingStructure &cs){
                 cs_img.at<uint16_t>(imgy, imgx) *= ((2<<8)/4); //exchange to 16 bits
             }
         }
-        ImageShow(cs_img);
+        #ifdef IMAGE_DEBUG
+            // ImageShow(img);
+        #endif
         inputs.push_back(cs_img);
 }
 
@@ -38,14 +44,32 @@ void MMlab_SignalProcess::ImageProcessing(void){
     // std::cout<<"image size is: "<<img.size().height<<","<<img.size().width<<std::endl;
     cv::GaussianBlur(img,img,cv::Size(3,3),1.5);
     cv::Canny(img,img,5,45);
-    // ImageShow(img);
-    inputs.pop_back();
+    #ifdef IMAGE_DEBUG
+        ImageShow(img);
+    #endif
+    // inputs.pop_back();
 }
+
+
+void MMlab_SignalProcess::EarlyStopAlgorithm(EncModeCtrl& m_modeCtrl,int posx, int posy, int width, int height){
+    // m_modeCtrl.printMode();
+    CUStatistics();
+}
+
+void MMlab_SignalProcess::CUStatistics(){
+    cv::Mat current_block = (inputs.back());
+
+}
+
 
 void MMlab_SignalProcess::ImageShow(cv::Mat& img){ // use for checking the matrix data is right or not.
     // std::cout << "M=" << std::endl << img << std::endl; 
     cv::imshow("test",img);
-    cv::waitKey(0);
-    cv::destroyAllWindows();
+    #if (COMPUTER_USE) // lab computer
+        cv::waitKey(10);
+    #else//my own computer is ok for the below format.
+        cv::waitKey(0);
+        cv::destroyAllWindows();
+    #endif
     
 }
