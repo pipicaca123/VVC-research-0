@@ -312,6 +312,7 @@ void EncCu::compressCtu( CodingStructure& cs, const UnitArea& area, const unsign
   mmlab_signalprocess.GetPixelInputs(*tempCS); //get the processed CTU Coding Structure.
   mmlab_signalprocess.ImageProcessing(); // apply image processing algorithm to current CTU.
   xCompressCU(tempCS, bestCS, partitioner);
+  mmlab_signalprocess.ReleaseprocessedCTUimg();
   cs.slice->m_mapPltCost[0].clear();
   cs.slice->m_mapPltCost[1].clear();
   // all signals were already copied during compression if the CTU was split - at this point only the structures are copied to the top level CS
@@ -569,7 +570,8 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
   const UnitArea currCsArea = clipArea( CS::getArea( *bestCS, bestCS->area, partitioner.chType ), *tempCS->picture );
 
   /*-----mmlab test algorithm-----*/
-  //mmlab_signalprocess.EarlyStopAlgorithm(*m_modeCtrl);
+  mmlab_signalprocess.EarlyStopAlgorithm(*m_modeCtrl,tempCS->area.lx(),tempCS->area.ly(),\
+                                        tempCS->area.lwidth(),tempCS->area.lheight()); // VTM xy definition is different from opencv.
   /*------------------------------*/
 #if JVET_Y0152_TT_ENC_SPEEDUP
   tempCS->splitRdCostBest = NULL;

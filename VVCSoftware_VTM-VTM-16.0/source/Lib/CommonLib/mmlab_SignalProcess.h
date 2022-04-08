@@ -10,11 +10,9 @@
 class MMlab_SignalProcess{
 private:
     std::vector<cv::Mat> inputs;
-    //early stop algorithm sub function
-    // void RemoveHorSplit();
-    // void RemoveVerSplit();
-    // void RemoveAllSplit();
-    void CUStatistics();
+    cv::Mat processedCTU_img;
+    int CTUx,CTUy,CTUh,CTUw;
+    void CUStatistics(int posx, int posy, int width, int height);
     //debug function
     void ImageShow(cv::Mat& img); 
 public:
