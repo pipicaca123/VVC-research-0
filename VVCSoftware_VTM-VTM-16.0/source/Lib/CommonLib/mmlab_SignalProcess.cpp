@@ -44,6 +44,12 @@ void MMlab_SignalProcess::ImageProcessing(void){
     // std::cout<<"image size is: "<<img.size().height<<","<<img.size().width<<std::endl;
     cv::GaussianBlur(img,processedCTU_img,cv::Size(3,3),1.5);
     cv::Canny(img,processedCTU_img,5,45);
+    // for(int x=0;x<128;x++){
+    //     for(int y=0;y<128;y++){  
+    //         std::cout<<(int)(processedCTU_img.at<uchar>(x,y)/255)<<" ";
+    //     }
+    //     std::cout<<std::endl;
+    // }
     #ifdef IMAGE_DEBUG
         ImageShow(processedCTU_img);
     #endif
@@ -57,14 +63,29 @@ void MMlab_SignalProcess::EarlyStopAlgorithm(EncModeCtrl& m_modeCtrl,int posx, i
 }
 
 void MMlab_SignalProcess::CUStatistics(int posx, int posy, int width, int height){
-    // cv::Mat current_block = inputs.back();
+    std::vector<int> ver_edge(width,0);
+    std::vector<int> hor_edge(height,0);
     // std::cout<<posx-CTUx<<","<<posy-CTUy<<","<<width<<","<<height<<std::endl;
     cv::Rect rect(posx-CTUx,posy-CTUy,width,height); // 4 parameters corresponse to x,y,w,h
     cv::Mat CU_img = cv::Mat(processedCTU_img,rect).clone();
     // if(width>=64 && height>=32)
     //     ImageShow(CU_img);
-    
 
+    //get horizontal edge statistics information
+    for(int y=0;y<height;y++){
+        for(int x=0;x<width;x++){
+            hor_edge[y] += (int)(CU_img.at<uchar>(x,y)/255);
+        }
+        std::cout<<hor_edge[y]<<",";
+    }
+    std::cout<<std::endl;
+    for(int x=0;x<width;x++){
+        for(int y=0;y<height;y++){
+            ver_edge[x] += (int)(CU_img.at<uchar>(x,y)/255);
+        }
+        std::cout<<ver_edge[x]<<",";
+    }
+    std::cout<<std::endl;
 }
 
 
